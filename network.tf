@@ -12,12 +12,26 @@ resource "google_compute_subnetwork" "sopost-vpc-subnet" {
 
 }
 
-resource "google_compute_firewall" "sopost-firewall" {
-    name = "sopost-firewall"
-    network = google_compute_network.sopost-vpc.id
+resource "google_compute_firewall" "sopost-firewall-http" {
+    name = "sopost-firewall-http"
+    network = google_compute_network.sopost-vpc.name
 
     allow {
         protocol = "tcp"
-        ports = ["80", "22"]
+        ports = ["80"]
     }
+
+    source_tags = ["http"]
+}
+
+resource "google_compute_firewall" "sopost-firewall-ssh" {
+    name = "sopost-firewall-ssh"
+    network = google_compute_network.sopost-vpc.name
+
+    allow {
+        protocol = "tcp"
+        ports = ["22"]
+    }
+
+    source_tags = ["ssh"]
 }
