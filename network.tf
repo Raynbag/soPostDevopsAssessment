@@ -18,20 +18,6 @@ resource "google_compute_firewall" "sopost-firewall-http" {
 
     allow {
         protocol = "tcp"
-        ports = ["80"]
+        ports = ["80","22"]
     }
-
-    source_tags = ["http"]
-}
-
-resource "google_compute_firewall" "sopost-firewall-ssh" {
-    name = "sopost-firewall-ssh"
-    network = google_compute_network.sopost-vpc.name
-
-    allow {
-        protocol = "tcp"
-        ports = ["22"]
-    }
-
-    source_tags = ["ssh"]
 }

@@ -26,7 +26,7 @@ resource "kubernetes_deployment" "sopost-k8s-deployment" {
 
           env {
             name = "WORDPRESS_DB_HOST"
-            value = google_sql_database.sopost-sql-db.self_link
+            value = "${google_sql_database_instance.sopost-sql-instance.ip_address.0.ip_address}:3306"
           }
 
           env {
