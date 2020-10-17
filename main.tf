@@ -34,7 +34,7 @@ resource "google_service_account" "sopost-sa" {
 
 resource "google_project_iam_binding" "sopost-iam-binding" {
   project = var.google_project
-  role    = "roles/cloudsql.client"
+  role    = "roles/cloudsql.admin"
 
   members = [
     "serviceAccount:${google_service_account.sopost-sa.email}",
@@ -43,4 +43,24 @@ resource "google_project_iam_binding" "sopost-iam-binding" {
 
 resource "google_service_account_key" "sopost-sak" {
   service_account_id = google_service_account.sopost-sa.name
+}
+
+resource "kubernetes_secret" "sopost-sa-key" {
+  metadata {
+    name = "sopost-sa-key"
+  }
+  data = {
+    "key.json" = base64decode(google_service_account_key.sopost-sak.private_key)
+  }
+}
+
+resource "kubernetes_secret" "sopost-mysql-key" {
+  metadata {
+    name = "sopost-mysql-key"
+  }
+  data = {
+    "username" = "wordpress"
+    "password" = random_password.sopost-sql-password.result
+    "database" = google_sql_database.sopost-sql-db.name
+  }
 }

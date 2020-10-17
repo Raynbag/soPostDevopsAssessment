@@ -12,12 +12,24 @@ resource "google_compute_subnetwork" "sopost-vpc-subnet" {
 
 }
 
-resource "google_compute_firewall" "sopost-firewall-http" {
-    name = "sopost-firewall-http"
+resource "google_compute_firewall" "sopost-firewall-ingress" {
+    name = "sopost-firewall-ingress"
     network = google_compute_network.sopost-vpc.name
+    direction = "INGRESS"
 
     allow {
         protocol = "tcp"
         ports = ["80","22"]
+    }
+}
+
+resource "google_compute_firewall" "sopost-firewall-egress" {
+    name = "sopost-firewall-egress"
+    network = google_compute_network.sopost-vpc.name
+    direction = "EGRESS"
+
+    allow {
+        protocol = "tcp"
+        ports = ["3307"]
     }
 }

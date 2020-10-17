@@ -1,5 +1,5 @@
 resource "google_container_cluster" "sopost-container-cluster" {
-    name = "sopost-containter-cluster"
+    name = "sopost-container-cluster"
     location = data.google_compute_zones.available.names[0]
     remove_default_node_pool = true
     initial_node_count = 1

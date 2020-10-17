@@ -26,7 +26,7 @@ resource "kubernetes_deployment" "sopost-k8s-deployment" {
 
           env {
             name = "WORDPRESS_DB_HOST"
-            value = "${google_sql_database_instance.sopost-sql-instance.ip_address.0.ip_address}:3306"
+            value = "127.0.0.1:3306"
           }
 
           env {
@@ -49,6 +49,17 @@ resource "kubernetes_deployment" "sopost-k8s-deployment" {
             }
           }
 
+          env {
+            name = "WORDPRESS_DB_NAME"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret.sopost-mysql-key.metadata.0.name
+                key = "database"
+                
+              }
+            }
+          }
+
           port {
             container_port = 80
             name = "wordpress"
@@ -61,14 +72,15 @@ resource "kubernetes_deployment" "sopost-k8s-deployment" {
         }
 
         container {
-          name = "cloudsql-proxy"
-          image = "gcr.io/cloudsql-docker/gce-proxy:1.11"
-          command = ["/cloud_sql_proxy", 
+          name = "cloud-sql-proxy"
+          image = "gcr.io/cloudsql-docker/gce-proxy:1.17"
+          command = ["/cloud_sql_proxy",
             "-instances=${google_sql_database_instance.sopost-sql-instance.connection_name}=tcp:3306",
             "-credential_file=/secrets/cloudsql/key.json"]
           security_context {
             run_as_user = 2
             allow_privilege_escalation = false
+            run_as_non_root = true
           }
           volume_mount {
             name = kubernetes_secret.sopost-sa-key.metadata.0.name
@@ -124,23 +136,4 @@ resource "kubernetes_persistent_volume_claim" "sopost-kpvc" {
             }
         }
     }
-}
-
-resource "kubernetes_secret" "sopost-sa-key" {
-  metadata {
-    name = "sopost-sa-key"
-  }
-  data = {
-    "key.json" = base64decode(google_service_account_key.sopost-sak.private_key)
-  }
-}
-
-resource "kubernetes_secret" "sopost-mysql-key" {
-  metadata {
-    name = "sopost-mysql-key"
-  }
-  data = {
-    "username" = "wordpress"
-    "password" = random_password.sopost-sql-password.result
-  }
 }
